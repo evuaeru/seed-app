@@ -1,0 +1,15 @@
+{
+  "appId": "com.zay.seedcosmicreboot",
+  "appName": "SEED",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#050714"
+    }
+  }
+}

@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#03040B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SEED" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>SEED — Cosmic Dopamine Reboot &amp; Streak Tracker</title>
+  <link rel="manifest" href="manifest.json" id="app-manifest-link" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=11" />
+</head>
+<body data-app-edition="demo">
+  <!-- Hidden SVG Filters for Cinema Film Grain & Asteroid-Seed 3D Displacement Lighting -->
+  <svg width="0" height="0" style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+    <defs>
+      <filter id="cosmic-film-grain" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch" result="noise" />
+        <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise" />
+      </filter>
+      <filter id="asteroid-seed-relief" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="4" seed="7" result="turbulence" />
+        <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="6" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feDiffuseLighting in="turbulence" lighting-color="#E2E8F0" surfaceScale="2.2" diffuseConstant="1.15" result="diffuse">
+          <feDistantLight azimuth="225" elevation="52" />
+        </feDiffuseLighting>
+        <feComposite in="displaced" in2="diffuse" operator="arithmetic" k1="0.85" k2="0.45" k3="0.1" k4="0" result="litAsteroid" />
+        <feComposite in="litAsteroid" in2="SourceGraphic" operator="in" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Global Twinkling Deep Space Canvas -->
+  <canvas id="starfield-canvas" aria-hidden="true"></canvas>
+
+  <main class="app-stage">
+    <!-- Desktop Showcase Control Bar (Hidden automatically on mobile screens) -->
+    <header class="desktop-showcase-bar" aria-label="Simulator Controls">
+      <div class="showcase-brand">
+        <div class="showcase-orb-mini" aria-hidden="true"></div>
+        <span class="showcase-brand-title" id="desktop-brand-title">SEED • Cosmic Reboot</span>
+        <span class="showcase-brand-badge" id="desktop-edition-badge">v1.0.0</span>
+      </div>
+      <div class="showcase-controls">
+        <button type="button" class="showcase-chip" data-preset-streak="day1" id="chip-preset-day1" title="Simulasi pengguna baru pertama kali buka (Hari ke-1 dari 00:00:00)">
+          Day 1 (Mulai 0)
+        </button>
+        <button type="button" class="showcase-chip active" data-preset-streak="ref">
+          Ref (2d 12h 42m)
+        </button>
+        <button type="button" class="showcase-chip" data-preset-streak="1">24h</button>
+        <button type="button" class="showcase-chip" data-preset-streak="3">3d</button>
+        <button type="button" class="showcase-chip" data-preset-streak="7">7d</button>
+        <button type="button" class="showcase-chip" data-preset-streak="14">14d</button>
+        <button type="button" class="showcase-chip" data-preset-streak="30">30d</button>
+        <button type="button" class="showcase-chip" data-preset-streak="90">90d</button>
+        <button type="button" class="showcase-chip" id="btn-install-pwa" title="Pasang aplikasi SEED ke layar utama HP">
+          Install App
+        </button>
+        <button type="button" class="showcase-chip" id="btn-toggle-frame" title="Toggle iPhone Frame / Fullscreen">
+          Frame
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic Reference Header Above Phone Frame -->
+    <div class="tab-hero-banner" id="tab-hero-banner">
+      <h1 id="tab-hero-heading">Quit<br />Goon</h1>
+      <div class="tab-hero-underline" id="tab-hero-underline"></div>
+    </div>
+
+    <!-- iPhone 16 Pro Viewport Container (393px x 852px, rounded-[48px], bg-[#03040B]) -->
+    <div class="phone-frame-wrapper" id="phone-frame-wrapper" data-active-tab="home">
+      <div class="phone-ambient-glow" aria-hidden="true"></div>
+
+      <div class="phone-frame" id="phone-frame">
+        <!-- Dynamic 60fps Deep Cosmic Nebula & Drifting Starfield Canvas -->
+        <canvas id="phone-cosmos-canvas" class="phone-cosmos-canvas" aria-hidden="true"></canvas>
+
+        <!-- 60-80 Micro-Stars Layer (#03040B Abyssal Cosmos) -->
+        <div class="phone-inner-stars" id="phone-inner-stars" aria-hidden="true"></div>
+
+        <!-- Subtle SVG Noise / Film Grain Overlay (opacity-[0.03], mix-blend-overlay) -->
+        <div class="phone-film-grain" aria-hidden="true"></div>
+
+        <!-- Hidden clock node for internal time sync compatibility (No fake status bar / battery / notch) -->
+        <span id="ios-clock" style="display: none;" aria-hidden="true">00:00</span>
+
+        <!-- Toast Feedback Banner -->
+        <div class="cosmic-toast" id="cosmic-toast" role="status" aria-live="polite"></div>
+
+        <!-- =================================================================
+             SCREENS VIEWPORT (5 TABS)
+             ================================================================= -->
+        <div class="screens-viewport">
+
+          <!-- ===============================================================
+               SCREEN A (TAB 1): THE LIVE STREAK TIMER
+               Pure Negative Space + Left Stack (68px) + Right 3-Layer 3D Orb
+               =============================================================== -->
+          <section class="tab-screen active" id="screen-home" aria-label="Home Streak Timer">
+            <!-- Whisper Editorial Meta Strip (Zero Cards / Zero Boxes) -->
+            <div class="home-top-pill-row">
+              <div class="xp-status-pill">
+                <strong id="home-xp-value">150 XP</strong>
+                <span>•</span>
+                <span>Urges Defeated: <b id="home-urges-count">2</b></span>
+              </div>
+              <span class="stealth-indicator-pill" id="stealth-badge" style="display: none;">
+                STEALTH
+              </span>
+            </div>
+            <div class="streak-start-chip-row">
+              <span class="streak-start-chip" id="home-streak-start-meta">
+                Dimulai: Memuat waktu...
+              </span>
+            </div>
+
+            <!-- Main Asymmetric Stage: Left Timer Stack (left: 32px) + Right Sculptural 3D Orb (right: -155px) -->
+            <div class="home-split-stage">
+              <!-- Left Stack (Positioned left: 32px, vertically centered, z-10, space-y-6 / 24px gap) -->
+              <div class="streak-timer-stack" id="streak-timer-stack">
+                <div class="timer-unit-block">
+                  <div class="timer-giant-number" id="timer-days">2</div>
+                  <div class="timer-sub-label">days</div>
+                </div>
+                <div class="timer-unit-block">
+                  <div class="timer-giant-number" id="timer-hours">12</div>
+                  <div class="timer-sub-label">hours</div>
+                </div>
+                <div class="timer-unit-block">
+                  <div class="timer-giant-number" id="timer-minutes">42</div>
+                  <div class="timer-sub-label">minutes</div>
+                </div>
+                <div class="timer-unit-block">
+                  <div class="timer-giant-number" id="timer-seconds">23</div>
+                  <div class="timer-sub-label">seconds</div>
+                </div>
+              </div>
+
+              <!-- Right Sculptural 3D Cosmic Orb (absolute right-[-155px] top-1/2 -translate-y-1/2 w-[360px] h-[360px]) -->
+              <div
+                class="cosmic-orb-wrapper"
+                id="cosmic-orb"
+                role="button"
+                tabindex="0"
+                aria-label="Activate Emergency SOS Breathing Shield"
+                title="Tap Cosmic Orb for Emergency SOS 4-7-8 Breathing"
+              >
+                <!-- Layer 1: Atmospheric Corona (w-full h-full rounded-full bg-[#2E4CFF]/25 blur-[60px]) -->
+                <div class="orb-atmosphere-bloom"></div>
+                <!-- Layer 2: Outer Glowing Rim Sphere -->
+                <div class="orb-outer-shell" id="orb-outer-shell">
+                  <!-- High-FPS 60fps Shader & SOS 4-7-8 Breathing FX Canvas -->
+                  <canvas
+                    id="sos-orb-fx-canvas"
+                    class="sos-orb-fx-canvas"
+                    width="340"
+                    height="340"
+                    aria-hidden="true"
+                  ></canvas>
+                  <!-- Layer 3: Inner Abyssal Core Sphere (w-[72%] h-[72%] rounded-full) -->
+                  <div class="orb-inner-ring" id="orb-inner-ring">
+                    <div class="orb-void-core">
+                      <!-- 4-7-8 Breathing Readout (Visible during SOS Mode) -->
+                      <div class="orb-breath-readout" id="orb-breath-readout">
+                        <span class="breath-phase-label" id="breath-phase-label">TARIK NAPAS (4s)</span>
+                        <span class="breath-seconds-giant" id="breath-seconds-giant">4s</span>
+                        <span class="breath-pattern-tag">4-7-8 Breathing</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive SOS Rescue Panel (Appears when SOS Mode is active) -->
+            <div class="sos-rescue-panel" id="sos-rescue-panel" aria-live="polite">
+              <div class="sos-header-row">
+                <span class="sos-badge">Emergency Urge Shield</span>
+                <button type="button" class="sos-close-btn" id="btn-close-sos">✕</button>
+              </div>
+
+              <div class="sos-core-reason-box">
+                <span>My Core Reason</span>
+                <p id="sos-core-reason-display">
+                  "Mengembalikan kejernihan pikiran, fokus penuh, dan kendali penuh atas hidupku."
+                </p>
+              </div>
+
+              <div class="sos-challenge-box">
+                <div class="sos-challenge-text">
+                  <small>Instant Physical Interrupt</small>
+                  <span id="sos-challenge-label">Cuci muka dengan air dingin sekarang selama 15 detik!</span>
+                </div>
+                <button type="button" class="sos-shuffle-btn" id="btn-shuffle-challenge" title="Ganti Tantangan Fisik">
+                  Acak
+                </button>
+              </div>
+
+              <button type="button" class="btn-urge-victory" id="btn-urge-victory">
+                Godaan Berhasil Dilewati (+50 XP)
+              </button>
+            </div>
+
+            <!-- Minimal Bottom Controls (Daily 3s Hold Commit + SOS Trigger + Safe Relapse Reset) -->
+            <div class="home-bottom-controls" id="home-bottom-controls">
+              <button
+                type="button"
+                class="pledge-hold-btn"
+                id="btn-hold-pledge"
+                aria-label="Hold 3 seconds to commit today"
+              >
+                <div class="pledge-hold-fill" id="pledge-hold-fill"></div>
+                <span class="pledge-hold-label" id="pledge-hold-label">
+                  Hold 3s to Commit Today
+                </span>
+              </button>
+
+              <div class="home-secondary-actions">
+                <button type="button" class="btn-sos-trigger" id="btn-open-sos">
+                  Urge Shield / SOS
+                </button>
+                <button type="button" class="btn-relapse-safe" id="btn-open-relapse">
+                  I Relapsed (Reset Timer)
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===============================================================
+               SCREEN B (TAB 2): "ORIGIN SEED" COLLECTIBLE VIEW
+               Floating Artifact in Deep Space — Zero Card Container
+               =============================================================== -->
+          <section class="tab-screen" id="screen-vault" aria-label="Seed Vault Evolution">
+            <div class="vault-hero-card">
+              <!-- Top Stage Navigator -->
+              <div class="vault-top-bar">
+                <div class="vault-nav-group">
+                  <button
+                    type="button"
+                    class="vault-circle-icon-btn vault-step-btn"
+                    id="btn-vault-step-prev"
+                    title="Previous Stage"
+                    aria-label="Previous Stage"
+                  >
+                    ‹
+                  </button>
+                  <span class="vault-stage-counter" id="vault-stage-counter">
+                    Stage 1 of 6 • 1/6 Collected
+                  </span>
+                  <button
+                    type="button"
+                    class="vault-circle-icon-btn vault-step-btn"
+                    id="btn-vault-step-next"
+                    title="Next Stage"
+                    aria-label="Next Stage"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+
+              <!-- Top Center Stack (pt-14 flex flex-col items-center) -->
+              <div class="vault-center-header">
+                <div class="vault-badges-row">
+                  <div class="seed-status-pill collected" id="seed-status-pill">Collected</div>
+                  <div class="seed-archetype-pill" id="seed-archetype-pill">Tier I • Lunar Spore</div>
+                </div>
+                <h2 class="seed-hero-title" id="seed-hero-title">Origin Seed</h2>
+              </div>
+
+              <!-- Centerpiece (No card! Floating in pure space) -->
+              <div class="seed-3d-stage" id="seed-3d-stage" data-anim-mode="orbit">
+                <!-- Soft backdrop glow: w-56 h-56 rounded-full bg-[#3B5BFF]/15 blur-[50px] absolute -->
+                <div class="seed-3d-glow" id="seed-3d-glow"></div>
+                <div class="seed-energy-pulse-wave" id="seed-energy-pulse-wave" aria-hidden="true"></div>
+                <div class="seed-orbit-ring ring-outer" id="seed-ring-outer" aria-hidden="true">
+                  <span class="seed-orbit-node"></span>
+                </div>
+                <div class="seed-orbit-ring ring-inner" id="seed-ring-inner" aria-hidden="true">
+                  <span class="seed-orbit-node node-secondary"></span>
+                </div>
+                <div class="seed-floating-wrapper" id="seed-floating-wrapper">
+                  <canvas
+                    id="seed-3d-canvas"
+                    width="240"
+                    height="240"
+                    title="Drag to rotate 3D Cosmic Seed in 360°"
+                  ></canvas>
+                </div>
+                <!-- Stasis Lock Overlay when viewing an unreached stage -->
+                <div class="seed-stasis-overlay" id="seed-stasis-overlay" aria-live="polite">
+                  <div class="stasis-lock-badge">
+                    <span class="stasis-lock-title">LOCKED IN STASIS</span>
+                    <span class="stasis-lock-time" id="stasis-lock-time">Butuh 2 hari lagi</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Description below seed (mt-8 max-w-[240px] text-center text-[15px] text-[#7E87A8] leading-snug font-normal) -->
+              <p class="seed-hero-description" id="seed-hero-description">
+                Enhanced mental clarity, self-esteem, and relationships.
+              </p>
+
+              <!-- Bottom Metric (mt-auto pb-14 flex flex-col items-center) -->
+              <div class="vault-bottom-metric">
+                <div class="seed-nurture-label">Time to nurture</div>
+                <div class="seed-nurture-time" id="seed-nurture-time">24 hours</div>
+              </div>
+            </div>
+
+            <!-- Collapsible Vault Matrix & Telemetry Drawer (Keeps primary Screen B 100% card-free) -->
+            <details class="editorial-drawer" id="vault-matrix-drawer">
+              <summary class="editorial-drawer-summary">Explore All 6 Evolution Stages</summary>
+              <div class="editorial-drawer-body">
+                <!-- Interactive 3D Animation Mode Switcher & Energy Burst -->
+                <div class="seed-anim-toolbar" role="group" aria-label="3D Seed Animation Controls">
+                  <button type="button" class="seed-anim-mode-btn active" data-seed-anim="orbit">
+                    Orbit
+                  </button>
+                  <button type="button" class="seed-anim-mode-btn" data-seed-anim="morph">
+                    Bio-Morph
+                  </button>
+                  <button type="button" class="seed-anim-mode-btn" data-seed-anim="hyper">
+                    Hyper-Spin
+                  </button>
+                  <button type="button" class="seed-pulse-action-btn" id="btn-pulse-seed">
+                    Energy Burst (+5 XP)
+                  </button>
+                </div>
+
+                <!-- Stage Neural & Biological Benefit Telemetry Bars -->
+                <div class="vault-telemetry-card" id="vault-telemetry-card">
+                  <div class="vault-telemetry-header">
+                    <span class="vault-telemetry-title" id="vault-telemetry-title">Efek Neuro-Biologis Artefak</span>
+                    <span class="vault-telemetry-tag" id="vault-telemetry-tag">Stage 1 • 24h</span>
+                  </div>
+                  <div class="vault-telemetry-bars" id="vault-telemetry-bars"></div>
+                </div>
+
+                <!-- Progress Toward Next Evolution -->
+                <div class="vault-progress-card">
+                  <div class="vault-progress-header">
+                    <span id="vault-next-label">Next: Sprout Core (3 days)</span>
+                    <span id="vault-next-percent">76%</span>
+                  </div>
+                  <div class="vault-progress-track">
+                    <div class="vault-progress-fill" id="vault-progress-fill" style="width: 76%;"></div>
+                  </div>
+                </div>
+
+                <!-- 6 Evolution Stages Interactive Grid -->
+                <div class="vault-grid-title">6 Evolution Stages (24h — 90d)</div>
+                <div class="vault-stages-grid" id="vault-stages-grid"></div>
+              </div>
+            </details>
+          </section>
+
+          <!-- ===============================================================
+               SCREEN C (TAB 3): "REWIRE YOUR BRAIN" AUDIO TAPE CARD
+               Single Focused Card Centered on Canvas (#0B0E1D, rounded-[28px])
+               =============================================================== -->
+          <section class="tab-screen" id="screen-rewire" aria-label="Rewire Brain Audio Tapes">
+            <!-- Single Focused Card Centered on Canvas -->
+            <div class="rewire-featured-card">
+              <div class="rewire-card-top">
+                <span class="rewire-card-subtitle" id="rewire-active-header">The Introduction</span>
+                <span class="rewire-unlocked-badge">Unlocked</span>
+              </div>
+
+              <!-- Artwork Box (my-4 h-[150px] rounded-[16px] bg-black overflow-hidden relative flex items-center justify-center) -->
+              <div class="rewire-artwork-box">
+                <svg class="rewire-meditation-svg" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <defs>
+                    <!-- Glowing Crimson / Gold Solar-Flare Aura (#FF9900, #E11D48, #450A0A) -->
+                    <radialGradient id="auraGlow" cx="50%" cy="54%" r="52%">
+                      <stop offset="0%" stop-color="#FFFBEB" />
+                      <stop offset="16%" stop-color="#FF9900" />
+                      <stop offset="44%" stop-color="#E11D48" />
+                      <stop offset="74%" stop-color="#450A0A" />
+                      <stop offset="100%" stop-color="#000000" />
+                    </radialGradient>
+                    <radialGradient id="rimHighlight" cx="50%" cy="38%" r="36%">
+                      <stop offset="0%" stop-color="#FF9900" stop-opacity="0.9" />
+                      <stop offset="55%" stop-color="#E11D48" stop-opacity="0.4" />
+                      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="320" height="150" fill="#000000" />
+                  <!-- Solar-Flare Aura Behind Head -->
+                  <circle cx="160" cy="82" r="84" fill="url(#auraGlow)" />
+                  <circle cx="160" cy="68" r="56" fill="url(#rimHighlight)" />
+                  <!-- Organic Solar Wave Rings -->
+                  <ellipse cx="160" cy="78" rx="68" ry="44" fill="none" stroke="#FF9900" stroke-opacity="0.22" stroke-width="1" />
+                  <ellipse cx="160" cy="78" rx="52" ry="34" fill="none" stroke="#E11D48" stroke-opacity="0.32" stroke-width="1.2" />
+                  <path d="M88 118 Q125 82 160 112 T232 114" stroke="#FF9900" stroke-opacity="0.35" stroke-width="1.5" fill="none" />
+                  <path d="M98 62 Q160 20 222 62" stroke="#E11D48" stroke-opacity="0.28" stroke-width="1.2" fill="none" />
+                  <!-- Dark Meditating Silhouette -->
+                  <path d="M114 150 C118 116, 137 104, 160 104 C183 104, 202 116, 206 150 Z" fill="#030307" stroke="#FF9900" stroke-opacity="0.55" stroke-width="1.2" />
+                  <circle cx="160" cy="72" r="22" fill="#030307" stroke="#FF9900" stroke-opacity="0.7" stroke-width="1.3" />
+                </svg>
+              </div>
+
+              <!-- Editorial Paragraph: Left-aligned (text-[13px] text-[#C5C9DA] leading-[1.55] font-normal mb-5) -->
+              <p class="rewire-description-text" id="rewire-description-text">
+                This introduction equips you with the proper mental frameworks and strategies for using and implementing the SEED rewiring tapes collection. You will understand how the collection has been engineered. And you will learn how to use the tapes in the most effective way.
+              </p>
+
+              <!-- Pill CTA Button (w-full h-[50px] rounded-full bg-gradient-to-r from-[#4B66FF] to-[#3B52EE]) -->
+              <button type="button" class="btn-glossy-blue-pill" id="btn-play-tape">
+                <span id="play-tape-icon">▶</span>
+                <span id="play-tape-label">Play Tape 1</span>
+              </button>
+
+              <!-- Footer Stat: 32421 users completed (text-[11px] text-[#8E95B2] text-center mt-3 font-medium) -->
+              <div class="rewire-completed-count" id="rewire-completed-count">
+                32421 users completed
+              </div>
+            </div>
+
+            <!-- Collapsible Web Audio API Binaural Synthesizer Deck -->
+            <details class="editorial-drawer" id="rewire-synth-drawer">
+              <summary class="editorial-drawer-summary">Binaural Frequency &amp; Timer Controls</summary>
+              <div class="editorial-drawer-body">
+                <div class="binaural-synth-deck" id="binaural-synth-deck">
+                  <div class="synth-deck-header">
+                    <span class="synth-deck-title">Web Audio Binaural Synth</span>
+                    <span class="synth-freq-readout" id="synth-freq-readout">10Hz Alpha (200/210Hz)</span>
+                  </div>
+
+                  <div class="tapes-selector-list" id="tapes-selector-list">
+                    <button type="button" class="tape-option-btn active" data-tape-id="1">
+                      <div class="tape-option-main">
+                        <span class="tape-option-title">Tape 1: Dopamine Reset</span>
+                        <span class="tape-option-sub">Alpha Wave • Fokus &amp; Tenang</span>
+                      </div>
+                      <span class="tape-hz-badge">10 Hz</span>
+                    </button>
+                    <button type="button" class="tape-option-btn" data-tape-id="2">
+                      <div class="tape-option-main">
+                        <span class="tape-option-title">Tape 2: Urge Dissolver</span>
+                        <span class="tape-option-sub">Theta Wave • Redakan Impuls</span>
+                      </div>
+                      <span class="tape-hz-badge">6 Hz</span>
+                    </button>
+                    <button type="button" class="tape-option-btn" data-tape-id="3">
+                      <div class="tape-option-main">
+                        <span class="tape-option-title">Tape 3: Deep Sleep Reboot</span>
+                        <span class="tape-option-sub">Delta Wave • Pemulihan Malam</span>
+                      </div>
+                      <span class="tape-hz-badge">3 Hz</span>
+                    </button>
+                  </div>
+
+                  <canvas id="audio-visualizer" width="310" height="46"></canvas>
+
+                  <div class="synth-controls-footer">
+                    <div class="duration-pills" role="group" aria-label="Session Duration">
+                      <button type="button" class="duration-pill" data-duration-min="5">5m</button>
+                      <button type="button" class="duration-pill active" data-duration-min="10">10m</button>
+                      <button type="button" class="duration-pill" data-duration-min="15">15m</button>
+                    </div>
+                    <span class="synth-timer-display" id="synth-timer-display">10:00</span>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <!-- ===============================================================
+               SCREEN D (TAB 4): "STATISTICS" & CHALLENGE VIEW
+               Zero-Card Top + 7-Day Glance Row + Vibrant Bottom Challenge Card
+               =============================================================== -->
+          <section class="tab-screen" id="screen-stats" aria-label="Statistics and Challenges">
+            <!-- Title: Statistics (text-[28px] font-bold text-white tracking-[-0.03em] mb-6) -->
+            <h2 class="stats-page-title">Statistics</h2>
+
+            <!-- Hero Metrics Row (grid grid-cols-2 gap-6 mb-8 — NO CARDS around these numbers!) -->
+            <div class="stats-hero-metrics">
+              <div class="stat-metric-col">
+                <div class="stat-giant-value" id="stat-time-saved">52</div>
+                <div class="stat-blue-caption" id="stat-time-caption">
+                  potential time saved<br />this week
+                </div>
+              </div>
+              <div class="stat-metric-col">
+                <div class="stat-giant-value">
+                  <span id="stat-improvement-pct">29</span><small>%</small>
+                </div>
+                <div class="stat-blue-caption" id="stat-improvement-caption">
+                  improvement<br />vs last week
+                </div>
+              </div>
+            </div>
+
+            <!-- 7-Day Glance Row (mb-8 — NO CARD container!) -->
+            <div class="seven-days-glance-block">
+              <div class="stats-section-heading">LAST 7 DAYS AT A GLANCE</div>
+              <div class="seven-days-row" id="seven-days-row" role="group" aria-label="Last 7 Days Status"></div>
+            </div>
+
+            <!-- Challenge Banner Card (Bottom — The ONLY card on this screen) -->
+            <div class="community-challenge-wrapper">
+              <div class="community-challenge-card">
+                <div class="challenge-info-col">
+                  <div class="challenge-title" id="challenge-title">
+                    No Nut<br />November
+                  </div>
+                  <div class="challenge-participants" id="challenge-participants">
+                    15,032 participants
+                  </div>
+                </div>
+
+                <!-- Right visual: w-[74px] h-[74px] rounded-full bg-black/50 border border-white/10 overflow-hidden featuring glowing cosmic walnut/seed 3D illustration -->
+                <div class="challenge-pod-artwork" aria-hidden="true">
+                  <svg viewBox="0 0 84 84" width="74" height="74">
+                    <defs>
+                      <radialGradient id="walnutCosmicAura" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#A855F7" stop-opacity="0.55" />
+                        <stop offset="65%" stop-color="#4C1D95" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+                      </radialGradient>
+                      <radialGradient id="walnutShell3D" cx="35%" cy="30%" r="68%">
+                        <stop offset="0%" stop-color="#FDE68A" />
+                        <stop offset="38%" stop-color="#D97706" />
+                        <stop offset="78%" stop-color="#78350F" />
+                        <stop offset="100%" stop-color="#270E04" />
+                      </radialGradient>
+                    </defs>
+                    <circle cx="42" cy="42" r="38" fill="url(#walnutCosmicAura)" />
+                    <ellipse cx="42" cy="44" rx="28" ry="11" fill="none" stroke="#8B5CF6" stroke-opacity="0.45" stroke-width="1.2" transform="rotate(-18 42 44)" />
+                    <!-- 3D Sculpted Cosmic Walnut / Seed Core -->
+                    <path d="M42 18 C55 18, 62 29, 60 43 C58 56, 50 65, 42 66 C34 65, 26 56, 24 43 C22 29, 29 18, 42 18 Z" fill="url(#walnutShell3D)" stroke="#F59E0B" stroke-opacity="0.5" stroke-width="1" />
+                    <!-- Organic Brain/Walnut Ridges -->
+                    <path d="M42 20 L42 64" stroke="#451A03" stroke-width="1.6" stroke-linecap="round" opacity="0.75" />
+                    <path d="M34 26 C29 33, 30 48, 36 58" stroke="#FDE68A" stroke-opacity="0.45" stroke-width="1.3" fill="none" stroke-linecap="round" />
+                    <path d="M50 26 C55 33, 54 48, 48 58" stroke="#451A03" stroke-opacity="0.65" stroke-width="1.4" fill="none" stroke-linecap="round" />
+                    <circle cx="35" cy="34" r="2.2" fill="#FEF3C7" opacity="0.65" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Overlapping Bottom Pill Button -->
+              <div class="challenge-cta-dock" id="challenge-cta-dock">
+                <button type="button" class="btn-glossy-blue-pill" id="btn-join-challenge">
+                  Join the Challenge
+                </button>
+              </div>
+            </div>
+
+            <!-- Collapsible Extended Analytics Drawer (Preserves all deep telemetry & JSDOM tests while keeping Screen D pure) -->
+            <details class="editorial-drawer" id="stats-extended-drawer">
+              <summary class="editorial-drawer-summary">Deep Telemetry &amp; Recovery Matrix</summary>
+              <div class="editorial-drawer-body">
+                <div class="stats-top-header-row">
+                  <div class="stats-period-pills" id="stats-period-pills" role="group" aria-label="Statistics Period Filter">
+                    <button type="button" class="stats-period-pill active" data-stats-period="7d">7D</button>
+                    <button type="button" class="stats-period-pill" data-stats-period="30d">30D</button>
+                    <button type="button" class="stats-period-pill" data-stats-period="90d">90D</button>
+                  </div>
+                  <button type="button" class="challenge-switch-link" id="btn-switch-challenge">
+                    Ganti: 30-Day Clean Challenge ⇄
+                  </button>
+                </div>
+
+                <div class="day-inspector-popover" id="day-inspector-popover">
+                  <span id="day-inspector-text">Ketuk lingkaran hari untuk melihat detail catatan atau pemicu.</span>
+                </div>
+
+                <!-- 4-Card KPI Telemetry Grid -->
+                <div class="stats-kpi-grid" id="stats-kpi-grid">
+                  <div class="stats-kpi-card">
+                    <span class="kpi-card-label">Streak Aktif</span>
+                    <strong class="kpi-card-value" id="stat-kpi-current-streak">2d 12h</strong>
+                    <span class="kpi-card-sub" id="stat-kpi-streak-sub">Fase Awal</span>
+                  </div>
+                  <div class="stats-kpi-card">
+                    <span class="kpi-card-label">Rekor Terbaik</span>
+                    <strong class="kpi-card-value" id="stat-kpi-best-streak">14d 6h</strong>
+                    <span class="kpi-card-sub" id="stat-kpi-best-sub">Personal Best</span>
+                  </div>
+                  <div class="stats-kpi-card">
+                    <span class="kpi-card-label">Godaan Ditolak</span>
+                    <strong class="kpi-card-value" id="stat-kpi-urges-total">9x</strong>
+                    <span class="kpi-card-sub" id="stat-kpi-urge-rate">90% Rasio Menang</span>
+                  </div>
+                  <div class="stats-kpi-card">
+                    <span class="kpi-card-label">Skor Disiplin</span>
+                    <strong class="kpi-card-value" id="stat-kpi-clean-score">83%</strong>
+                    <span class="kpi-card-sub" id="stat-kpi-xp-rank">Rank: Fokus</span>
+                  </div>
+                </div>
+
+                <!-- 90-Day Brain Rewiring & Dopamine Receptor Telemetry -->
+                <div class="brain-rewiring-card" id="brain-rewiring-card">
+                  <div class="brain-card-header">
+                    <div>
+                      <div class="stats-section-heading" style="margin-bottom: 2px;">
+                        90-DAY BRAIN RECOVERY TELEMETRY
+                      </div>
+                      <span class="brain-phase-badge" id="stat-reboot-phase-badge">
+                        Fase 1: Stabilisasi Dopamin
+                      </span>
+                    </div>
+                    <div class="brain-overall-pill" id="stat-reboot-overall-pct">31%</div>
+                  </div>
+                  <div class="brain-recovery-bars" id="brain-recovery-bars"></div>
+                  <div class="brain-milestone-strip">
+                    <span id="brain-focus-sessions-chip">2.1 Sesi Deep Work Pulih</span>
+                    <span id="brain-next-milestone-chip">Target: 3 Hari (Sprout Core)</span>
+                  </div>
+                </div>
+
+                <!-- 30-Day Consistency Heatmap Matrix -->
+                <div class="consistency-heatmap-card">
+                  <div class="heatmap-header-row">
+                    <div class="stats-section-heading" style="margin-bottom: 0;">
+                      30-DAY CONSISTENCY MATRIX
+                    </div>
+                    <span class="heatmap-summary-badge" id="heatmap-summary-label">26/30 Bersih (87%)</span>
+                  </div>
+                  <div class="thirty-days-heatmap" id="thirty-days-heatmap" role="grid" aria-label="30-Day Consistency Heatmap"></div>
+                  <div class="heatmap-legend-row">
+                    <span><i class="legend-dot clean"></i> Bersih</span>
+                    <span><i class="legend-dot shielded"></i> Urge Lewat</span>
+                    <span><i class="legend-dot relapse"></i> Evaluasi</span>
+                    <span><i class="legend-dot today"></i> Hari Ini</span>
+                  </div>
+                </div>
+
+                <!-- 7-Day Energy & Focus Trend Chart + Daily Check-In -->
+                <div class="energy-trend-card">
+                  <div class="heatmap-header-row">
+                    <div class="stats-section-heading" style="margin-bottom: 0;">
+                      7-DAY ENERGY &amp; FOCUS TREND
+                    </div>
+                    <span class="energy-avg-badge" id="energy-avg-badge">4.1 / 5.0</span>
+                  </div>
+                  <canvas id="stats-energy-canvas" width="320" height="116" aria-label="7-Day Energy and Focus Line Chart"></canvas>
+                  <div class="energy-checkin-prompt">Log Energi &amp; Fokus Hari Ini:</div>
+                  <div class="energy-checkin-row" id="energy-checkin-row">
+                    <button type="button" class="energy-lvl-btn" data-energy-level="1">
+                      <strong class="energy-lvl-score">1</strong>
+                      <span class="energy-lvl-name">Lelah</span>
+                    </button>
+                    <button type="button" class="energy-lvl-btn" data-energy-level="2">
+                      <strong class="energy-lvl-score">2</strong>
+                      <span class="energy-lvl-name">Berat</span>
+                    </button>
+                    <button type="button" class="energy-lvl-btn" data-energy-level="3">
+                      <strong class="energy-lvl-score">3</strong>
+                      <span class="energy-lvl-name">Stabil</span>
+                    </button>
+                    <button type="button" class="energy-lvl-btn active" data-energy-level="4">
+                      <strong class="energy-lvl-score">4</strong>
+                      <span class="energy-lvl-name">Fokus</span>
+                    </button>
+                    <button type="button" class="energy-lvl-btn" data-energy-level="5">
+                      <strong class="energy-lvl-score">5</strong>
+                      <span class="energy-lvl-name">Puncak</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Trigger Breakdown & Peak Vulnerability Time Windows -->
+                <div class="trigger-breakdown-card">
+                  <div class="heatmap-header-row">
+                    <div class="stats-section-heading" style="margin-bottom: 0;">
+                      TRIGGER BREAKDOWN (EVALUASI PEMICU)
+                    </div>
+                    <span class="trigger-total-badge" id="trigger-total-badge">10 Log</span>
+                  </div>
+                  <div class="trigger-bars-list" id="trigger-bars-list"></div>
+
+                  <div class="vulnerability-divider"></div>
+                  <div class="heatmap-header-row" style="margin-bottom: 6px;">
+                    <span class="kpi-card-label" style="color: #CBD5E1;">RENTANG WAKTU RAWAN</span>
+                    <span class="vuln-peak-badge" id="vuln-peak-badge">Puncak: Larut Malam (21–01)</span>
+                  </div>
+                  <div class="time-vulnerability-grid" id="time-vulnerability-grid"></div>
+
+                  <button type="button" class="btn-stats-quick-urge" id="btn-stats-quick-urge">
+                    Catat Godaan Berhasil Dilewati Sekarang (+25 XP)
+                  </button>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <!-- ===============================================================
+               SCREEN E (TAB 5): SHIELD & PRIVACY (Version, Daily Reminder, Core Reason, Stealth, PIN)
+               =============================================================== -->
+          <section class="tab-screen" id="screen-shield" aria-label="Shield and Privacy Settings">
+            <h2 class="stats-page-title">Shield &amp; Privacy</h2>
+
+            <!-- 0. Clean Minimal App Version Info -->
+            <div class="shield-section-card shield-version-card" id="card-app-version">
+              <div class="shield-row-between">
+                <div>
+                  <div class="shield-card-title">Versi Aplikasi</div>
+                  <p class="shield-card-desc" id="shield-version-desc">
+                    SEED Cosmic Dopamine Reboot • Build v1.0.0 (Offline-First PWA)
+                  </p>
+                </div>
+                <span class="shield-version-pill" id="shield-version-badge">SEED v1.0.0</span>
+              </div>
+            </div>
+
+            <!-- 1. Daily Commit Reminder Notification (Pengingat Harian untuk Commit) -->
+            <div class="shield-section-card" id="card-daily-reminder">
+              <div class="shield-row-between">
+                <div>
+                  <div class="shield-card-title">
+                    <span>Pengingat Commit Harian</span>
+                  </div>
+                  <p class="shield-card-desc">
+                    Munculkan notifikasi di HP setiap hari (misal jam 07:00 pagi) sebagai pengingat untuk Commit.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="cosmic-switch"
+                  id="switch-daily-reminder"
+                  role="switch"
+                  aria-checked="false"
+                  aria-label="Toggle Daily Commit Reminder"
+                >
+                  <span class="cosmic-switch-thumb"></span>
+                </button>
+              </div>
+
+              <div class="reminder-controls-row">
+                <div class="reminder-time-field-wrap">
+                  <label for="input-reminder-time" class="reminder-time-label">Jam Pengingat</label>
+                  <input
+                    type="time"
+                    id="input-reminder-time"
+                    class="streak-datetime-input reminder-time-input"
+                    value="07:00"
+                    aria-label="Jam Pengingat Commit Harian"
+                  />
+                </div>
+                <span class="reminder-perm-badge" id="reminder-permission-badge">
+                  Notifikasi Siap
+                </span>
+              </div>
+
+              <div class="streak-start-preview-box" id="reminder-status-box">
+                <div class="streak-preview-heading">Status Pengingat Harian:</div>
+                <div class="streak-preview-body" id="reminder-status-text">
+                  Nonaktif — Aktifkan untuk pengingat Commit setiap hari pukul 07:00
+                </div>
+              </div>
+
+              <div class="shield-row-between" style="gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-small-cosmic" id="btn-save-reminder">
+                  Simpan Jam Pengingat
+                </button>
+                <button
+                  type="button"
+                  class="btn-small-cosmic"
+                  id="btn-test-reminder"
+                  style="background: rgba(16, 185, 129, 0.18); border-color: rgba(34, 197, 94, 0.45); color: #6EE7B7;"
+                >
+                  Tes Notifikasi Sekarang
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Streak Start Date & Time Picker -->
+            <div class="shield-section-card" id="card-custom-streak-time">
+              <div class="shield-card-title">
+                <span>Atur Tanggal &amp; Jam Mulai Streak</span>
+                <span style="color: #818CF8; font-size: 0.72rem;">Real-Time Clock</span>
+              </div>
+              <p class="shield-card-desc">
+                Timer berjalan otomatis mengikuti jam sistem perangkat secara real-time. Atur kapan Master memulai streak (misal kemarin atau jam tertentu):
+              </p>
+              <div class="streak-datetime-control-group">
+                <input
+                  type="datetime-local"
+                  id="input-streak-start-datetime"
+                  class="streak-datetime-input"
+                  aria-label="Tanggal dan Jam Mulai Streak"
+                />
+              </div>
+              <div class="streak-start-preview-box" id="streak-start-preview-box">
+                <div class="streak-preview-heading">Pratinjau Kalkulasi Live:</div>
+                <div class="streak-preview-body" id="streak-start-preview-text">
+                  Durasi Berjalan: 2 hari 12 jam 42 menit • Tahap: Origin Seed
+                </div>
+              </div>
+              <div class="shield-row-between" style="gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-small-cosmic btn-save-start" id="btn-save-streak-start">
+                  Simpan Waktu Mulai
+                </button>
+                <button type="button" class="btn-small-cosmic btn-set-now" id="btn-set-streak-now" title="Mulai dari detik ini (00:00:00)">
+                  Mulai Dari Sekarang
+                </button>
+                <button type="button" class="btn-small-cosmic btn-set-yesterday" id="btn-set-streak-yesterday" title="Atur mulai tepat 24 jam yang lalu">
+                  Mulai 24 Jam Lalu
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. My Core Reason (Displayed in SOS Mode) -->
+            <div class="shield-section-card">
+              <div class="shield-card-title">
+                <span>My Core Reason (Alasan Utama)</span>
+                <span style="color: #4D7CFE; font-size: 0.72rem;">Tampil saat SOS</span>
+              </div>
+              <p class="shield-card-desc">
+                Tulis alasan terdalammu berhenti. Pesan ini akan muncul otomatis saat kamu menekan tombol darurat SOS.
+              </p>
+              <textarea
+                class="core-reason-textarea"
+                id="input-core-reason"
+                rows="3"
+                placeholder="Tulis alasan utamamu di sini..."
+              >Mengembalikan kejernihan pikiran, fokus penuh, dan kendali penuh atas hidupku.</textarea>
+              <div class="shield-row-between">
+                <span style="font-size: 0.68rem; color: #22C55E;" id="core-reason-saved-hint">
+                  Tersimpan di perangkat
+                </span>
+                <button type="button" class="btn-small-cosmic" id="btn-save-reason">
+                  Simpan Alasan
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. Discreet / Stealth Mode Toggle -->
+            <div class="shield-section-card">
+              <div class="shield-row-between">
+                <div>
+                  <div class="shield-card-title">Stealth / Discreet Mode</div>
+                  <p class="shield-card-desc">
+                    Samarkan judul sensitif ("Quit Goon", "No Nut November") menjadi "Deep Focus" &amp; "30-Day Focus" saat di tempat umum.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="cosmic-switch"
+                  id="switch-stealth-mode"
+                  role="switch"
+                  aria-checked="false"
+                  aria-label="Toggle Stealth Mode"
+                >
+                  <span class="cosmic-switch-thumb"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. 4-Digit PIN Lock -->
+            <div class="shield-section-card">
+              <div class="shield-row-between">
+                <div>
+                  <div class="shield-card-title">4-Digit PIN Lock</div>
+                  <p class="shield-card-desc" id="pin-status-desc">
+                    Kunci aplikasi dengan PIN 4 angka agar privasi streak terjaga.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="cosmic-switch"
+                  id="switch-pin-enabled"
+                  role="switch"
+                  aria-checked="false"
+                  aria-label="Toggle PIN Lock"
+                >
+                  <span class="cosmic-switch-thumb"></span>
+                </button>
+              </div>
+
+              <div class="pin-setup-row">
+                <input
+                  type="password"
+                   inputmode="numeric"
+                  maxlength="4"
+                  class="pin-input-field"
+                  id="input-pin-code"
+                  value="1234"
+                  aria-label="4-Digit PIN Code"
+                />
+                <button type="button" class="btn-small-cosmic" id="btn-save-pin">
+                  Atur PIN
+                </button>
+                <button type="button" class="btn-small-cosmic" id="btn-lock-now">
+                  Kunci Sekarang
+                </button>
+              </div>
+            </div>
+
+            <!-- 5. Daily Time Saved Estimator & Reset Data -->
+            <div class="shield-section-card">
+              <div class="shield-row-between">
+                <div>
+                  <div class="shield-card-title">Estimasi Waktu Terselamatkan / Hari</div>
+                  <p class="shield-card-desc">
+                    Digunakan untuk menghitung metrik "potential time saved this week" di tab Statistics.
+                  </p>
+                </div>
+                <input
+                  type="number"
+                  min="5"
+                  max="240"
+                  class="pin-input-field"
+                  style="width: 74px; letter-spacing: normal;"
+                  id="input-daily-minutes"
+                  value="21"
+                  aria-label="Minutes saved per day"
+                />
+              </div>
+              <div class="shield-row-between" style="margin-top: 4px; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-small-cosmic" id="btn-simulate-day1" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(34, 197, 94, 0.45); color: #6EE7B7;">
+                  Simulasi Day 1 (Mulai 0)
+                </button>
+                <button type="button" class="btn-small-cosmic" id="btn-reset-all-zero" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(248, 113, 113, 0.45); color: #FCA5A5;">
+                  Reset Semua ke 0
+                </button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- =================================================================
+             MINIMAL 5-TAB BOTTOM NAVIGATION BAR
+             ================================================================= -->
+        <nav class="bottom-nav-bar" aria-label="Primary Navigation">
+          <button type="button" class="nav-tab-btn active" data-tab-target="home" id="nav-btn-home">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15 15" />
+            </svg>
+            <span id="nav-label-home">Timer</span>
+          </button>
+
+          <button type="button" class="nav-tab-btn" data-tab-target="vault" id="nav-btn-vault">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.5C7.5 7 6 11.2 6 14.5a6 6 0 0 0 12 0c0-3.3-1.5-7.5-6-12Z" />
+            </svg>
+            <span id="nav-label-vault">Seed Vault</span>
+          </button>
+
+          <button type="button" class="nav-tab-btn" data-tab-target="rewire" id="nav-btn-rewire">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <polygon points="8 5 19 12 8 19 8 5" />
+            </svg>
+            <span id="nav-label-rewire">Rewire</span>
+          </button>
+
+          <button type="button" class="nav-tab-btn" data-tab-target="stats" id="nav-btn-stats">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            <span id="nav-label-stats">Statistics</span>
+          </button>
+
+          <button type="button" class="nav-tab-btn" data-tab-target="shield" id="nav-btn-shield">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" />
+            </svg>
+            <span id="nav-label-shield">Shield</span>
+          </button>
+        </nav>
+
+        <!-- =================================================================
+             MODAL 0: DAY ONE GENESIS ONBOARDING (Fresh First-Time Open)
+             ================================================================= -->
+        <div class="cosmic-modal-backdrop" id="modal-genesis-welcome" role="dialog" aria-modal="true" aria-labelledby="genesis-modal-title">
+          <div class="cosmic-modal-card" style="text-align: center;">
+            <div style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; color: #22C55E; text-transform: uppercase;">
+              GENESIS PROTOCOL • DAY 1
+            </div>
+            <h3 class="modal-title" id="genesis-modal-title" style="font-size: 1.28rem;">
+              Selamat Datang di Hari Pertama
+            </h3>
+            <p class="modal-subtitle">
+              Perjalanan 90-Day Cosmic Dopamine Reboot dimulai dari <strong>0 detik</strong> sekarang. Benih <em>Origin Seed</em> telah ditanam dan siap tumbuh bersama fokusmu.
+            </p>
+            <div style="background: rgba(15, 23, 52, 0.78); border: 1px solid rgba(77, 124, 254, 0.25); border-radius: 14px; padding: 10px 12px; text-align: left; font-size: 0.74rem; color: #CBD5E1; display: flex; flex-direction: column; gap: 6px;">
+              <div><strong>Target Pertama:</strong> 24 Jam (Origin Seed)</div>
+              <div><strong>Langkah Awal:</strong> Tahan tombol <em>Commit Today</em> selama 3 detik untuk mengunci komitmen hari ke-1 (+25 XP).</div>
+              <div><strong>Darurat:</strong> Ketuk <em>Cosmic Orb</em> kapan saja saat muncul godaan untuk pernapasan 4-7-8.</div>
+            </div>
+            <button type="button" class="btn-glossy-blue-pill" id="btn-start-genesis" style="margin-top: 4px;">
+              Mulai Perjalanan Day One Sekarang
+            </button>
+          </div>
+        </div>
+
+        <!-- =================================================================
+             MODAL 0B: EPIC COSMIC STAGE UNLOCK CELEBRATION
+             ================================================================= -->
+        <div
+          class="cosmic-modal-backdrop celebration-modal-backdrop"
+          id="modal-stage-unlocked"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unlock-modal-title"
+        >
+          <div class="celebration-fx-layer" id="celebration-fx-layer" aria-hidden="true">
+            <canvas id="celebration-fireworks-canvas" width="360" height="600" class="fireworks-canvas"></canvas>
+            <div class="stardust-burst-rings">
+              <div class="stardust-ring ring-1"></div>
+              <div class="stardust-ring ring-2"></div>
+              <div class="stardust-ring ring-3"></div>
+            </div>
+          </div>
+
+          <div class="cosmic-modal-card celebration-card" style="text-align: center;">
+            <button
+              type="button"
+              class="celebration-close-btn"
+              id="btn-close-stage-unlocked"
+              aria-label="Tutup"
+              title="Tutup"
+            >
+              ✕
+            </button>
+            <div class="celebration-glow-aura" id="celebration-glow-aura"></div>
+            <div class="celebration-stage-visual" id="celebration-stage-visual"></div>
+            <h3 class="modal-title celebration-title" id="unlock-modal-title" style="font-size: 1.05rem;">
+              ARTEFAK KOSMIK BARU TERBUKA!
+            </h3>
+            <div class="celebration-stage-name" id="celebration-stage-name">Sprout Core</div>
+            <div class="seed-archetype-pill" id="celebration-archetype-pill" style="margin: 0 auto;">
+              Tier II • Bio-Tendril Core
+            </div>
+            <p class="modal-subtitle" id="celebration-stage-desc" style="margin-top: 4px;">
+              Passing the dopamine crash peak; energy levels begin to rise.
+            </p>
+            <div class="celebration-reward-box">
+              <div class="celebration-xp-amount">+100 XP</div>
+              <div class="celebration-xp-label">Bonus Evolusi Kosmik &amp; Sinkronisasi Reseptor</div>
+            </div>
+            <button type="button" class="btn-glossy-blue-pill btn-claim-unlock-xp" id="btn-claim-unlock-xp">
+              Klaim +100 XP &amp; Buka Potensi!
+            </button>
+          </div>
+        </div>
+
+        <!-- =================================================================
+             MODAL 1: SAFE RELAPSE TRIGGER EVALUATION & RESET
+             ================================================================= -->
+        <div class="cosmic-modal-backdrop" id="modal-relapse" role="dialog" aria-modal="true" aria-labelledby="relapse-modal-title">
+          <div class="cosmic-modal-card">
+            <h3 class="modal-title" id="relapse-modal-title">Evaluasi Pemicu &amp; Reset</h3>
+            <p class="modal-subtitle">
+              Kegagalan adalah data untuk bangkit lebih kuat. Pilih pemicu utama agar tercatat di analitik sebelum me-reset timer ke 00:00:00:
+            </p>
+
+            <div class="trigger-chips-grid" id="relapse-triggers-grid">
+              <button type="button" class="trigger-select-btn selected" data-trigger="Larut Malam">
+                Larut Malam
+              </button>
+              <button type="button" class="trigger-select-btn" data-trigger="Bosan">
+                Bosan / Sendiri
+              </button>
+              <button type="button" class="trigger-select-btn" data-trigger="Stres">
+                Stres Kerja/Studi
+              </button>
+              <button type="button" class="trigger-select-btn" data-trigger="Sosmed">
+                Trigger Sosmed
+              </button>
+              <button type="button" class="trigger-select-btn" data-trigger="Kesepian" style="grid-column: span 2;">
+                Kesepian / Lelah Emosional
+              </button>
+            </div>
+
+            <input
+              type="text"
+              class="core-reason-textarea"
+              style="min-height: 38px;"
+              id="input-relapse-note"
+              placeholder="Catatan singkat (opsional, misal: doomscrolling jam 23:30)"
+            />
+
+            <div class="modal-actions-row">
+              <button type="button" class="btn-modal-cancel" id="btn-cancel-relapse">
+                Batal
+              </button>
+              <button type="button" class="btn-modal-confirm-reset" id="btn-confirm-relapse">
+                Catat &amp; Reset Timer
+              </button>
+            </div>
+            <button
+              type="button"
+              id="btn-relapse-full-reset"
+              style="margin-top: 8px; width: 100%; padding: 9px 12px; border-radius: 10px; background: rgba(16, 185, 129, 0.14); border: 1px dashed rgba(34, 197, 94, 0.45); color: #6EE7B7; font-size: 0.75rem; font-weight: 600; cursor: pointer;"
+            >
+              Reset Penuh Semua Statistik ke 0 (Mulai Baru dari Awal)
+            </button>
+          </div>
+        </div>
+
+        <!-- =================================================================
+             OVERLAY 2: 4-DIGIT PIN LOCK SCREEN
+             ================================================================= -->
+        <div class="pin-lock-overlay" id="pin-lock-overlay" role="dialog" aria-modal="true" aria-label="PIN Security Lock">
+          <div class="showcase-orb-mini" style="width: 44px; height: 44px;"></div>
+          <h3 class="modal-title" id="pin-overlay-title">SEED Security Shield</h3>
+          <p class="modal-subtitle" style="text-align: center;" id="pin-overlay-subtitle">
+            Masukkan 4-Digit PIN untuk membuka kembali akses aplikasi
+          </p>
+
+          <div class="pin-dots-row" id="pin-dots-row">
+            <span class="pin-dot"></span>
+            <span class="pin-dot"></span>
+            <span class="pin-dot"></span>
+            <span class="pin-dot"></span>
+          </div>
+
+          <div class="pin-keypad-grid" id="pin-keypad-grid">
+            <button type="button" class="pin-key-btn" data-pin-key="1">1</button>
+            <button type="button" class="pin-key-btn" data-pin-key="2">2</button>
+            <button type="button" class="pin-key-btn" data-pin-key="3">3</button>
+            <button type="button" class="pin-key-btn" data-pin-key="4">4</button>
+            <button type="button" class="pin-key-btn" data-pin-key="5">5</button>
+            <button type="button" class="pin-key-btn" data-pin-key="6">6</button>
+            <button type="button" class="pin-key-btn" data-pin-key="7">7</button>
+            <button type="button" class="pin-key-btn" data-pin-key="8">8</button>
+            <button type="button" class="pin-key-btn" data-pin-key="9">9</button>
+            <button type="button" class="pin-key-btn" data-pin-key="clear" style="font-size: 0.8rem;">CLR</button>
+            <button type="button" class="pin-key-btn" data-pin-key="0">0</button>
+            <button type="button" class="pin-key-btn" data-pin-key="del" style="font-size: 0.85rem;">DEL</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js?v=11"></script>
+</body>
+</html>

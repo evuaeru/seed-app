@@ -1,0 +1,19 @@
+{
+  "name": "seed-cosmic-reboot",
+  "version": "1.0.0",
+  "description": "SEED: Cosmic Dopamine Reboot & Streak Tracker (Web, PWA & Capacitor Android)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/app.test.js",
+    "build": "node build.js",
+    "android:init": "npx @capacitor/cli add android",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx @capacitor/cli open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  }
+}

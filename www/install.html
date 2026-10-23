@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#03040B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SEED" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>SEED — Official App Installer (Versi Rilis &amp; Versi Demo)</title>
+  <link rel="manifest" href="manifest-release.json" id="install-manifest-link" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=11" />
+</head>
+<body class="install-portal-body" data-selected-edition="release">
+  <!-- Global Deep Space Twinkling Starfield Canvas -->
+  <canvas id="install-starfield-canvas" class="install-starfield-canvas" aria-hidden="true"></canvas>
+
+  <!-- Subtle Film Grain Overlay -->
+  <div class="install-film-grain" aria-hidden="true"></div>
+
+  <!-- Reusable SVG Symbols (Gold 3D Star, Laurel Wreath Left/Right, Checkmark, Download Icon) -->
+  <svg width="0" height="0" style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+    <defs>
+      <linearGradient id="goldStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FEF08A" />
+        <stop offset="45%" stop-color="#FACC15" />
+        <stop offset="100%" stop-color="#D97706" />
+      </linearGradient>
+      <symbol id="icon-gold-star" viewBox="0 0 24 24">
+        <path
+          d="M12 2.2c.4 0 .8.2 1 .6l2.6 5.3 5.8.8c.9.1 1.3 1.2.6 1.8l-4.2 4.1 1 5.8c.2.9-.8 1.6-1.6 1.2L12 19.1l-5.2 2.7c-.8.4-1.8-.3-1.6-1.2l1-5.8-4.2-4.1c-.7-.6-.3-1.7.6-1.8l5.8-.8 2.6-5.3c.2-.4.6-.6 1-.6Z"
+          fill="url(#goldStarGrad)"
+        />
+      </symbol>
+      <symbol id="laurel-branch-left" viewBox="0 0 64 120">
+        <g fill="#FFFFFF">
+          <path d="M48 108 C24 94, 12 66, 18 24 C19 20, 21 20, 20 25 C15 64, 27 90, 50 105 Z" opacity="0.85" />
+          <path d="M22 20 C14 14, 14 6, 23 4 C25 12, 24 17, 22 20 Z" />
+          <path d="M18 36 C8 31, 6 21, 14 16 C19 23, 20 31, 18 36 Z" />
+          <path d="M21 38 C28 31, 31 22, 26 16 C21 22, 20 31, 21 38 Z" opacity="0.9" />
+          <path d="M17 54 C6 50, 3 39, 10 32 C16 39, 18 48, 17 54 Z" />
+          <path d="M21 55 C29 48, 31 38, 25 32 C20 39, 19 48, 21 55 Z" opacity="0.9" />
+          <path d="M20 72 C9 69, 4 58, 10 49 C17 56, 20 65, 20 72 Z" />
+          <path d="M25 71 C33 64, 34 54, 27 48 C22 55, 22 64, 25 71 Z" opacity="0.9" />
+          <path d="M27 88 C16 87, 9 77, 14 67 C22 73, 26 82, 27 88 Z" />
+          <path d="M32 86 C40 79, 40 69, 32 63 C28 70, 29 79, 32 86 Z" opacity="0.9" />
+          <path d="M38 101 C27 102, 19 94, 22 84 C30 89, 36 96, 38 101 Z" />
+          <path d="M43 97 C50 91, 49 81, 41 76 C37 83, 39 91, 43 97 Z" opacity="0.9" />
+        </g>
+      </symbol>
+      <symbol id="laurel-branch-right" viewBox="0 0 64 120">
+        <g fill="#FFFFFF" transform="translate(64, 0) scale(-1, 1)">
+          <path d="M48 108 C24 94, 12 66, 18 24 C19 20, 21 20, 20 25 C15 64, 27 90, 50 105 Z" opacity="0.85" />
+          <path d="M22 20 C14 14, 14 6, 23 4 C25 12, 24 17, 22 20 Z" />
+          <path d="M18 36 C8 31, 6 21, 14 16 C19 23, 20 31, 18 36 Z" />
+          <path d="M21 38 C28 31, 31 22, 26 16 C21 22, 20 31, 21 38 Z" opacity="0.9" />
+          <path d="M17 54 C6 50, 3 39, 10 32 C16 39, 18 48, 17 54 Z" />
+          <path d="M21 55 C29 48, 31 38, 25 32 C20 39, 19 48, 21 55 Z" opacity="0.9" />
+          <path d="M20 72 C9 69, 4 58, 10 49 C17 56, 20 65, 20 72 Z" />
+          <path d="M25 71 C33 64, 34 54, 27 48 C22 55, 22 64, 25 71 Z" opacity="0.9" />
+          <path d="M27 88 C16 87, 9 77, 14 67 C22 73, 26 82, 27 88 Z" />
+          <path d="M32 86 C40 79, 40 69, 32 63 C28 70, 29 79, 32 86 Z" opacity="0.9" />
+          <path d="M38 101 C27 102, 19 94, 22 84 C30 89, 36 96, 38 101 Z" />
+          <path d="M43 97 C50 91, 49 81, 41 76 C37 83, 39 91, 43 97 Z" opacity="0.9" />
+        </g>
+      </symbol>
+      <symbol id="icon-check-circle" viewBox="0 0 20 20">
+        <circle cx="10" cy="10" r="9" fill="rgba(34, 197, 94, 0.16)" stroke="#22C55E" stroke-width="1.5" />
+        <polyline points="6 10.3 8.8 13.1 14.2 7.4" fill="none" stroke="#4ADE80" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="icon-spark-circle" viewBox="0 0 20 20">
+        <circle cx="10" cy="10" r="9" fill="rgba(245, 158, 11, 0.16)" stroke="#F59E0B" stroke-width="1.5" />
+        <polyline points="6 10.3 8.8 13.1 14.2 7.4" fill="none" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- Toast Banner for Install Portal -->
+  <div class="cosmic-toast" id="install-portal-toast" role="status" aria-live="polite"></div>
+
+  <div class="install-web-root" id="install-web-root">
+    <!-- =====================================================================
+         STICKY TOP NAVIGATION BAR
+         ===================================================================== -->
+    <header class="install-navbar" aria-label="Install Website Navigation">
+      <div class="install-navbar-inner">
+        <a href="./install.html" class="install-brand-link">
+          <span class="showcase-orb-mini" aria-hidden="true"></span>
+          <span class="install-brand-wordmark">Seed</span>
+          <span class="install-brand-pill">App Installer</span>
+        </a>
+
+        <nav class="install-nav-links" aria-label="Section Links">
+          <a href="#section-editions" class="install-nav-link">2 Edisi Aplikasi</a>
+          <a href="#section-posters" class="install-nav-link">Showcase UI</a>
+          <a href="#section-comparison" class="install-nav-link">Demo vs Rilis</a>
+          <a href="#section-guide" class="install-nav-link">Cara Pasang</a>
+        </nav>
+
+        <div class="install-nav-actions">
+          <a href="./index.html?edition=demo" class="btn-nav-outline" id="nav-btn-open-demo">
+            Buka Demo
+          </a>
+          <a href="./index.html?edition=release" class="btn-nav-primary" id="nav-btn-open-release">
+            Buka Versi Rilis
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- =====================================================================
+         SECTION 1: BOOST / SEED REFERENCE HERO STAGE
+         (Matching Image 1 Panels 1 & 2: Laurel Wreaths, 5 Stars, 4.7 ratings,
+          Giant "Seed", "QUIT GOON FOR GOOD.", "Science-Backed Approach",
+          and Rising 3D Blue Cosmic Orb)
+         ===================================================================== -->
+    <section class="boost-hero-section" id="hero-boost-showcase" aria-label="Seed App Hero Showcase">
+      <div class="boost-hero-grid">
+        <!-- HERO POSTER A (Reference Image 1 Panel 1: Dual Laurels + QUIT GOON FOR GOOD. + Dual Install CTAs) -->
+        <div class="boost-hero-poster boost-poster-statement" id="boost-poster-statement">
+          <div class="laurel-awards-row">
+            <div class="laurel-award-badge" aria-label="Ranked #1 App to Quit Goon">
+              <svg class="laurel-svg" viewBox="0 0 64 120" aria-hidden="true"><use href="#laurel-branch-left" /></svg>
+              <div class="laurel-award-center">
+                <span class="laurel-rank-num">#1</span>
+                <span class="laurel-rank-sub">App to Quit Goon</span>
+              </div>
+              <svg class="laurel-svg" viewBox="0 0 64 120" aria-hidden="true"><use href="#laurel-branch-right" /></svg>
+            </div>
+
+            <div class="laurel-award-badge" aria-label="4.7 Star Ratings">
+              <svg class="laurel-svg" viewBox="0 0 64 120" aria-hidden="true"><use href="#laurel-branch-left" /></svg>
+              <div class="laurel-award-center">
+                <div class="gold-stars-mini-row" aria-hidden="true">
+                  <svg class="gold-star-icon"><use href="#icon-gold-star" /></svg>
+                  <svg class="gold-star-icon"><use href="#icon-gold-star" /></svg>
+                  <svg class="gold-star-icon"><use href="#icon-gold-star" /></svg>
+                  <svg class="gold-star-icon"><use href="#icon-gold-star" /></svg>
+                  <svg class="gold-star-icon"><use href="#icon-gold-star" /></svg>
+                </div>
+                <span class="laurel-rank-sub">4.7 ratings</span>
+              </div>
+              <svg class="laurel-svg" viewBox="0 0 64 120" aria-hidden="true"><use href="#laurel-branch-right" /></svg>
+            </div>
+          </div>
+
+          <div class="boost-statement-block">
+            <h2 class="boost-quit-headline">QUIT GOON<br />FOR GOOD.</h2>
+            <p class="boost-science-subtitle">Science-Backed<br />Approach</p>
+          </div>
+
+          <!-- Low-Key Chiaroscuro Cosmic Focus Silhouette & Phone Glow (Reference Image 1 Panel 1) -->
+          <div class="boost-chiaroscuro-stage" aria-hidden="true">
+            <div class="chiaroscuro-screen-bloom"></div>
+            <svg class="chiaroscuro-silhouette-svg" viewBox="0 0 260 150">
+              <defs>
+                <radialGradient id="screenWarmGlow" cx="62%" cy="78%" r="48%">
+                  <stop offset="0%" stop-color="#FDE68A" stop-opacity="0.55" />
+                  <stop offset="45%" stop-color="#D97706" stop-opacity="0.22" />
+                  <stop offset="100%" stop-color="#03040B" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <circle cx="156" cy="114" r="68" fill="url(#screenWarmGlow)" />
+              <path d="M52 148 C58 106, 88 86, 126 88 C154 90, 176 112, 186 148 Z" fill="#070913" stroke="rgba(253, 230, 138, 0.22)" stroke-width="1.2" />
+              <circle cx="124" cy="54" r="26" fill="#070913" stroke="rgba(253, 230, 138, 0.32)" stroke-width="1.2" />
+              <ellipse cx="131" cy="58" rx="7" ry="4.5" fill="none" stroke="rgba(253, 230, 138, 0.55)" stroke-width="1.2" />
+              <ellipse cx="147" cy="58" rx="6.5" ry="4.5" fill="none" stroke="rgba(253, 230, 138, 0.45)" stroke-width="1.2" />
+              <rect x="158" y="106" width="28" height="14" rx="3" transform="rotate(-18 158 106)" fill="#FEF08A" opacity="0.85" />
+            </svg>
+          </div>
+
+          <!-- Quick Dual Install Action Bar inside Hero -->
+          <div class="boost-hero-cta-group">
+            <button type="button" class="btn-hero-install-release" id="btn-hero-install-release">
+              <span>Instal Aplikasi Rilis (Mulai 0)</span>
+              <small>Mode Pribadi • v1.0</small>
+            </button>
+            <button type="button" class="btn-hero-install-demo" id="btn-hero-install-demo">
+              <span>Instal Aplikasi Demo (Showcase)</span>
+              <small>Data Referensi &amp; Preset 90 Hari</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- HERO POSTER B (Reference Image 1 Panel 2: Giant "Seed" + 5 Stars + Laurel #1 + Rising 3D Blue Orb) -->
+        <div class="boost-hero-poster boost-poster-centerpiece" id="boost-poster-seed-orb">
+          <!-- Giant "Seed" Wordmark + 5 Gold Stars + 4.7 ratings -->
+          <div class="boost-seed-logo-block">
+            <h1 class="boost-seed-giant-title">Seed</h1>
+            <div class="boost-stars-rating-block">
+              <div class="gold-stars-hero-row" aria-label="5 out of 5 stars">
+                <svg class="gold-star-lg"><use href="#icon-gold-star" /></svg>
+                <svg class="gold-star-lg"><use href="#icon-gold-star" /></svg>
+                <svg class="gold-star-lg"><use href="#icon-gold-star" /></svg>
+                <svg class="gold-star-lg"><use href="#icon-gold-star" /></svg>
+                <svg class="gold-star-lg"><use href="#icon-gold-star" /></svg>
+              </div>
+              <div class="boost-rating-caption">4.7 ratings</div>
+            </div>
+          </div>
+
+          <!-- Centerpiece Laurel Wreath (#1 App to Quit Goon) -->
+          <div class="laurel-centerpiece-block">
+            <div class="laurel-award-badge laurel-badge-lg" aria-label="Ranked #1 App to Quit Goon">
+              <svg class="laurel-svg laurel-svg-lg" viewBox="0 0 64 120" aria-hidden="true"><use href="#laurel-branch-left" /></svg>
+              <div class="laurel-award-center">
+                <span class="laurel-rank-num laurel-rank-num-lg">#1</span>
+                <span class="laurel-rank-sub laurel-rank-sub-lg">App to Quit<br />Goon</span>
+              </div>
+              <svg class="laurel-svg laurel-svg-lg" viewBox="0 0 64 120" aria-hidden="true"><use href="#laurel-branch-right" /></svg>
+            </div>
+            <p class="boost-science-subtitle">Science-Backed<br />Approach</p>
+          </div>
+
+          <!-- Rising 3D Sculptural Blue Cosmic Orb Horizon (Reference Image 1 Panel 2 Bottom) -->
+          <div class="boost-horizon-orb-stage" aria-hidden="true">
+            <div class="boost-orb-corona"></div>
+            <div class="boost-orb-outer-rim">
+              <div class="boost-orb-inner-void"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SECTION 2: PILIH & INSTAL 2 JENIS APLIKASI (VERSI RILIS VS VERSI DEMO)
+         ===================================================================== -->
+    <section class="install-editions-section" id="section-editions" aria-label="Pilih Jenis Aplikasi Demo atau Rilis">
+      <div class="install-section-header">
+        <span class="install-eyebrow-pill">DUAL EDITION ARCHITECTURE</span>
+        <h2 class="install-section-title">Pilih &amp; Instal 2 Jenis Aplikasi</h2>
+        <p class="install-section-subtitle">
+          Tersedia dua edisi dengan penyimpanan lokal terpisah: <strong>Versi Rilis</strong> untuk perjalanan komitmen nyata dari 0 detik, dan <strong>Versi Demo</strong> untuk eksplorasi fitur serta simulasi 90 hari.
+        </p>
+
+        <!-- Interactive Filter / Switcher Pills -->
+        <div class="edition-filter-pills" id="edition-filter-tabs" role="tablist" aria-label="Filter Edisi Aplikasi">
+          <button type="button" class="edition-filter-btn active" data-edition-filter="all" role="tab" aria-selected="true">
+            Tampilkan Kedua Versi (2)
+          </button>
+          <button type="button" class="edition-filter-btn" data-edition-filter="release" role="tab" aria-selected="false">
+            Hanya Versi Rilis (Utama)
+          </button>
+          <button type="button" class="edition-filter-btn" data-edition-filter="demo" role="tab" aria-selected="false">
+            Hanya Versi Demo (Sandbox)
+          </button>
+        </div>
+      </div>
+
+      <div class="editions-cards-grid" id="editions-cards-grid">
+        <!-- =================================================================
+             EDITION CARD 1: VERSI RILIS (PRODUCTION / PERSONAL REBOOT)
+             ================================================================= -->
+        <article class="edition-install-card edition-card-release" id="card-install-release" data-edition-card="release">
+          <div class="edition-card-glow release-glow" aria-hidden="true"></div>
+
+          <div class="edition-card-top">
+            <div class="edition-badge-row">
+              <span class="edition-tag-pill tag-release">APLIKASI RILIS • PRODUCTION v1.0</span>
+              <span class="edition-storage-pill">Vault Pribadi</span>
+            </div>
+            <div class="edition-title-row">
+              <img src="icon-192.png" alt="SEED Rilis Icon" class="edition-app-icon" width="56" height="56" />
+              <div>
+                <h3 class="edition-card-heading">SEED — Versi Rilis</h3>
+                <p class="edition-card-tagline">Edisi Personal Murni (Mulai dari 00:00:00 / Day 1 Genesis)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview Readout of Release Edition -->
+          <div class="edition-live-preview-box release-preview-box">
+            <div class="preview-box-header">
+              <span class="preview-dot dot-emerald"></span>
+              <span class="preview-box-label">STATUS DATA RILIS SAAT INI</span>
+              <span class="preview-manifest-code">manifest-release.json</span>
+            </div>
+            <div class="preview-timer-mini" id="release-live-timer-preview">
+              0d : 00h : 00m : 00s
+            </div>
+            <div class="preview-meta-sub" id="release-live-meta-preview">
+              Siap dimulai bersih dari Hari ke-1 (0 XP • 0 Godaan • Penyimpanan Terisolasi)
+            </div>
+          </div>
+
+          <ul class="edition-feature-list">
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+              <span><strong>Mulai Murni dari 00:00:00:</strong> Langsung memulai perjalanan 90-Day Dopamine Reboot dari detik ke-0 atau pilih tanggal mulai aslimu.</span>
+            </li>
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+              <span><strong>Bebas Tombol Cheat / Simulator:</strong> Tombol lompat waktu (24h–90d) disembunyikan agar disiplin harianmu 100% murni.</span>
+            </li>
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+              <span><strong>Penyimpanan Pribadi Terisolasi:</strong> Data disimpan di slot khusus rilis sehingga tidak akan tertimpa saat kamu mencoba versi Demo.</span>
+            </li>
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+              <span><strong>Fitur Proteksi Lengkap:</strong> 3s Daily Commit, Pengingat Commit Harian, SOS 4-7-8 Breathing, 3 Binaural Tapes, Stealth Mode (ASTRAL) &amp; 4-Digit PIN Lock.</span>
+            </li>
+          </ul>
+
+          <div class="edition-card-actions">
+            <button type="button" class="btn-install-primary btn-install-release-cta" id="btn-install-release">
+              <span>Instal Aplikasi Rilis</span>
+              <small>PWA Standalone / Layar Utama HP</small>
+            </button>
+
+            <div class="edition-secondary-btns">
+              <a href="./index.html?edition=release" class="btn-edition-secondary" id="btn-launch-release">
+                Buka Aplikasi Rilis
+              </a>
+              <button type="button" class="btn-edition-secondary" id="btn-download-release">
+                Unduh Installer Rilis
+              </button>
+              <button type="button" class="btn-edition-ghost" id="btn-reset-release-fresh" title="Reset data Versi Rilis kembali ke 00:00:00">
+                Reset Rilis ke 0
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- =================================================================
+             EDITION CARD 2: VERSI DEMO (SHOWCASE & 90-DAY SIMULATOR)
+             ================================================================= -->
+        <article class="edition-install-card edition-card-demo" id="card-install-demo" data-edition-card="demo">
+          <div class="edition-card-glow demo-glow" aria-hidden="true"></div>
+
+          <div class="edition-card-top">
+            <div class="edition-badge-row">
+              <span class="edition-tag-pill tag-demo">APLIKASI DEMO • SANDBOX v1.0</span>
+              <span class="edition-storage-pill">Mode Eksplorasi</span>
+            </div>
+            <div class="edition-title-row">
+              <img src="icon-192.png" alt="SEED Demo Icon" class="edition-app-icon demo-icon-tint" width="56" height="56" />
+              <div>
+                <h3 class="edition-card-heading">SEED — Versi Demo</h3>
+                <p class="edition-card-tagline">Edisi Showcase &amp; Simulator (Pre-loaded 2d 12h 42m + Preset 90 Hari)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview Readout of Demo Edition -->
+          <div class="edition-live-preview-box demo-preview-box">
+            <div class="preview-box-header">
+              <span class="preview-dot dot-amber"></span>
+              <span class="preview-box-label">STATUS DATA DEMO SAAT INI</span>
+              <span class="preview-manifest-code">manifest-demo.json</span>
+            </div>
+            <div class="preview-timer-mini" id="demo-live-timer-preview">
+              2d : 12h : 42m : 23s
+            </div>
+            <div class="preview-meta-sub" id="demo-live-meta-preview">
+              Data Referensi Aktif (150 XP • 52m Dihemat • 29% Peningkatan • Simulator 24h–90d)
+            </div>
+          </div>
+
+          <ul class="edition-feature-list">
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-spark-circle" /></svg>
+              <span><strong>Data Referensi Siap Pakai:</strong> Langsung terbuka pada streak 2 hari 12 jam 42 menit dengan metrik statistik &amp; heatmap terisi penuh.</span>
+            </li>
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-spark-circle" /></svg>
+              <span><strong>Time-Travel Simulator (24h — 90d):</strong> Dilengkapi tombol lompat waktu instan untuk menguji seluruh 6 tahap evolusi 3D Seed Vault.</span>
+            </li>
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-spark-circle" /></svg>
+              <span><strong>Uji Perayaan &amp; Efek Kosmik:</strong> Coba animasi 3D Orbit/Bio-Morph/Hyper-Spin, Fireworks Unlock Celebration, dan klaim +100 XP sepuasnya.</span>
+            </li>
+            <li>
+              <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-spark-circle" /></svg>
+              <span><strong>1-Klik Reset ke Data Demo:</strong> Bebas bereksperimen atau mereset timer, lalu kembalikan ke state referensi kapan saja.</span>
+            </li>
+          </ul>
+
+          <div class="edition-card-actions">
+            <button type="button" class="btn-install-primary btn-install-demo-cta" id="btn-install-demo">
+              <span>Instal Aplikasi Demo</span>
+              <small>PWA Showcase / Mode Simulator</small>
+            </button>
+
+            <div class="edition-secondary-btns">
+              <a href="./index.html?edition=demo" class="btn-edition-secondary" id="btn-launch-demo">
+                Buka Aplikasi Demo
+              </a>
+              <button type="button" class="btn-edition-secondary" id="btn-download-demo">
+                Unduh Installer Demo
+              </button>
+              <button type="button" class="btn-edition-ghost" id="btn-reset-demo-default" title="Kembalikan data Versi Demo ke 2d 12h 42m 23s">
+                Reset ke Data Demo
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SECTION 3: 4 REFERENCE APP SHOWCASE POSTERS (/BOOST & SEED DESIGN)
+         Replicating Image 1 Panel 3 & Image 2 Panels 1, 2, 3:
+         1. Quit Goon (Blue bar + Live Timer Phone)
+         2. Gamify Your Journey (Green bar + Origin Seed 3D Phone)
+         3. Rewire Your Brain (Gold bar + Meditation Card + Curved Arrow)
+         4. Track Your Progress (Red bar + Statistics & No Nut November Phone)
+         ===================================================================== -->
+    <section class="reference-posters-section" id="section-posters" aria-label="UI Showcase Posters">
+      <div class="install-section-header">
+        <span class="install-eyebrow-pill">SWISS EDITORIAL + DEEP COSMIC UI</span>
+        <h2 class="install-section-title"> Dirancang Presisi Seperti Referensi</h2>
+        <p class="install-section-subtitle">
+           Empat pilar utama ekosistem SEED: Live Streak Timer asimetris, evolusi 3D Seed Vault, terapi akustik Binaural Beats, dan telemetri pemulihan dopamin.
+        </p>
+      </div>
+
+      <div class="reference-posters-grid">
+        <!-- POSTER 1: QUIT GOON (Electric Blue #3B5BFF) -->
+        <div class="ref-poster-card" id="poster-quit-porn">
+          <div class="ref-poster-header">
+            <h3 class="ref-poster-title">Quit<br />Goon</h3>
+            <div class="ref-poster-bar bar-blue"></div>
+          </div>
+
+          <div class="ref-phone-shell glow-blue">
+            <div class="ref-phone-statusbar">
+              <span>9:41</span>
+              <div class="ref-status-icons" aria-hidden="true">
+                <span class="status-bars-mini"><i></i><i></i><i></i><i></i></span>
+                <span class="status-battery-mini"></span>
+              </div>
+            </div>
+
+            <div class="ref-phone-body ref-home-preview">
+              <div class="ref-timer-stack">
+                <div class="ref-timer-unit">
+                  <strong id="poster-timer-days">2</strong>
+                  <span>days</span>
+                </div>
+                <div class="ref-timer-unit">
+                  <strong id="poster-timer-hours">12</strong>
+                  <span>hours</span>
+                </div>
+                <div class="ref-timer-unit">
+                  <strong id="poster-timer-minutes">42</strong>
+                  <span>minutes</span>
+                </div>
+                <div class="ref-timer-unit">
+                  <strong id="poster-timer-seconds">23</strong>
+                  <span>seconds</span>
+                </div>
+              </div>
+
+              <!-- Right Cropped 3D Blue Cosmic Orb -->
+              <div class="ref-home-orb" aria-hidden="true">
+                <div class="ref-home-orb-rim">
+                  <div class="ref-home-orb-void"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSTER 2: GAMIFY YOUR JOURNEY (Neon Green #22C55E) -->
+        <div class="ref-poster-card" id="poster-gamify-journey">
+          <div class="ref-poster-header">
+            <h3 class="ref-poster-title">Gamify<br />Your Journey</h3>
+            <div class="ref-poster-bar bar-green"></div>
+          </div>
+
+          <div class="ref-phone-shell glow-green">
+            <div class="ref-phone-statusbar">
+              <span>9:41</span>
+              <div class="ref-status-icons" aria-hidden="true">
+                <span class="status-bars-mini"><i></i><i></i><i></i><i></i></span>
+                <span class="status-battery-mini"></span>
+              </div>
+            </div>
+
+            <div class="ref-phone-body ref-vault-preview">
+              <span class="ref-vault-close-circle" aria-hidden="true">✕</span>
+              <span class="ref-collected-pill">Collected</span>
+              <h4 class="ref-vault-heading">Origin Seed</h4>
+
+              <div class="ref-seed-canvas-wrap">
+                <canvas id="install-seed-canvas" width="180" height="180" aria-label="3D Origin Seed Preview"></canvas>
+              </div>
+
+              <p class="ref-vault-desc">
+                Enhanced mental clarity, self-esteem, and relationships.
+              </p>
+
+              <div class="ref-vault-footer">
+                <span class="ref-nurture-label">Time to nurture</span>
+                <strong class="ref-nurture-val">24 hours</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSTER 3: REWIRE YOUR BRAIN (Amber Gold #F59E0B + Curved Arrow) -->
+        <div class="ref-poster-card" id="poster-rewire-brain">
+          <div class="ref-poster-header">
+            <h3 class="ref-poster-title">Rewire<br />Your Brain</h3>
+            <div class="ref-poster-bar bar-gold"></div>
+          </div>
+
+          <div class="ref-rewire-stage">
+            <div class="ref-rewire-card">
+              <div class="ref-rewire-top">
+                <span class="ref-rewire-sub">The Introduction</span>
+                <span class="ref-rewire-badge">Unlocked</span>
+              </div>
+
+              <div class="ref-rewire-art">
+                <svg viewBox="0 0 320 140" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                  <defs>
+                    <radialGradient id="posterAuraGlow" cx="50%" cy="54%" r="52%">
+                      <stop offset="0%" stop-color="#FFFBEB" />
+                      <stop offset="18%" stop-color="#FF9900" />
+                      <stop offset="46%" stop-color="#E11D48" />
+                      <stop offset="76%" stop-color="#450A0A" />
+                      <stop offset="100%" stop-color="#000000" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="320" height="140" fill="#000000" />
+                  <circle cx="160" cy="76" r="78" fill="url(#posterAuraGlow)" />
+                  <ellipse cx="160" cy="74" rx="64" ry="40" fill="none" stroke="#FF9900" stroke-opacity="0.25" stroke-width="1" />
+                  <path d="M90 112 Q125 78 160 106 T230 108" stroke="#FF9900" stroke-opacity="0.4" stroke-width="1.5" fill="none" />
+                  <path d="M118 140 C122 110, 139 98, 160 98 C181 98, 198 110, 202 140 Z" fill="#030307" stroke="#FF9900" stroke-opacity="0.6" stroke-width="1.2" />
+                  <circle cx="160" cy="68" r="20" fill="#030307" stroke="#FF9900" stroke-opacity="0.75" stroke-width="1.3" />
+                </svg>
+              </div>
+
+              <p class="ref-rewire-text">
+                This introduction equips you with the proper mental frameworks and strategies for using and implementing the SEED rewiring tapes collection. You will understand how the collection has been engineered. And you will learn how to use the tapes in the most effective way.
+              </p>
+
+              <button type="button" class="btn-glossy-blue-pill ref-play-btn" id="btn-poster-play-tape">
+                <span id="poster-play-icon">▶</span>
+                <span id="poster-play-label">Play Tape 1</span>
+              </button>
+
+              <div class="ref-rewire-completed">32421 users completed</div>
+            </div>
+
+            <!-- Signature Curved Gold Arrow + Caption from Reference Image 2 Center -->
+            <div class="ref-binaural-callout">
+              <svg class="ref-curved-arrow-svg" viewBox="0 0 68 96" aria-hidden="true">
+                <path
+                  d="M54 88 C14 78, 8 38, 38 12"
+                  fill="none"
+                  stroke="#F59E0B"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                />
+                <polyline
+                  points="25 11 39 11 37 25"
+                  fill="none"
+                  stroke="#F59E0B"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <div class="ref-binaural-caption">
+                Immersive Hypnosis &amp;<br />Binaural Sounds
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSTER 4: TRACK YOUR PROGRESS (Coral Red #EF4444) -->
+        <div class="ref-poster-card" id="poster-track-progress">
+          <div class="ref-poster-header">
+            <h3 class="ref-poster-title">Track<br />Your Progress</h3>
+            <div class="ref-poster-bar bar-red"></div>
+          </div>
+
+          <div class="ref-phone-shell glow-red">
+            <div class="ref-phone-statusbar">
+              <span>9:41</span>
+              <div class="ref-status-icons" aria-hidden="true">
+                <span class="status-bars-mini"><i></i><i></i><i></i><i></i></span>
+                <span class="status-battery-mini"></span>
+              </div>
+            </div>
+
+            <div class="ref-phone-body ref-stats-preview">
+              <h4 class="ref-stats-heading">Statistics</h4>
+
+              <div class="ref-stats-metrics-row">
+                <div class="ref-stat-col">
+                  <strong class="ref-stat-big">52</strong>
+                  <span class="ref-stat-sub">potential time saved<br />this week</span>
+                </div>
+                <div class="ref-stat-col">
+                  <strong class="ref-stat-big">29<small>%</small></strong>
+                  <span class="ref-stat-sub">improvement<br />vs last week</span>
+                </div>
+              </div>
+
+              <div class="ref-glance-block">
+                <div class="ref-glance-title">LAST 7 DAYS AT A GLANCE</div>
+                <div class="ref-glance-circles">
+                  <span class="ref-day-dot dot-clean">S</span>
+                  <span class="ref-day-dot dot-empty">M</span>
+                  <span class="ref-day-dot dot-clean">T</span>
+                  <span class="ref-day-dot dot-empty">W</span>
+                  <span class="ref-day-dot dot-relapse">T</span>
+                  <span class="ref-day-dot dot-clean">F</span>
+                  <span class="ref-day-dot dot-today">S</span>
+                </div>
+              </div>
+
+              <div class="ref-challenge-card">
+                <div class="ref-challenge-row">
+                  <div>
+                    <div class="ref-challenge-name">No Nut<br />November</div>
+                    <div class="ref-challenge-users">15,032 participants</div>
+                  </div>
+                  <div class="ref-challenge-walnut" aria-hidden="true">
+                    <svg viewBox="0 0 64 64" width="54" height="54">
+                      <circle cx="32" cy="32" r="28" fill="#1E1035" />
+                      <path d="M32 12 C42 12, 48 21, 46 33 C44 44, 38 51, 32 52 C26 51, 20 44, 18 33 C16 21, 22 12, 32 12 Z" fill="#D97706" stroke="#FDE68A" stroke-width="1" />
+                      <path d="M32 14 L32 50" stroke="#451A03" stroke-width="1.5" />
+                    </svg>
+                  </div>
+                </div>
+                <a href="./index.html?edition=release" class="btn-glossy-blue-pill ref-join-btn">
+                  Join the Challenge
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SECTION 4: TABEL PERBANDINGAN (VERSI RILIS VS VERSI DEMO)
+         ===================================================================== -->
+    <section class="edition-comparison-section" id="section-comparison" aria-label="Perbandingan Versi Rilis dan Demo">
+      <div class="install-section-header">
+        <span class="install-eyebrow-pill">SPECIFICATION MATRIX</span>
+        <h2 class="install-section-title">Perbedaan Versi Rilis vs Versi Demo</h2>
+        <p class="install-section-subtitle">
+          Kedua aplikasi dapat dipasang berdampingan atau dijalankan secara bergantian tanpa saling menimpa data.
+        </p>
+      </div>
+
+      <div class="comparison-table-wrapper">
+        <table class="cosmic-comparison-table" id="edition-comparison-table">
+          <thead>
+            <tr>
+              <th>Fitur &amp; Spesifikasi</th>
+              <th class="col-release">SEED — Versi Rilis</th>
+              <th class="col-demo">SEED — Versi Demo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tujuan Penggunaan</strong></td>
+              <td class="col-release">Pemakaian Pribadi Harian (Komitmen Nyata)</td>
+              <td class="col-demo">Showcase UI/UX, Eksplorasi &amp; Pengujian Fitur</td>
+            </tr>
+            <tr>
+              <td><strong>Waktu Streak Awal</strong></td>
+              <td class="col-release">Mulai dari <code>00:00:00</code> (Day 1 Genesis / Kustom)</td>
+              <td class="col-demo">Pre-loaded <code>2d 12h 42m 23s</code> (Sesuai Referensi)</td>
+            </tr>
+            <tr>
+              <td><strong>Simulator Lompat Waktu (24h–90d)</strong></td>
+              <td class="col-release">Disembunyikan (Murni Mengikuti Jam Sistem)</td>
+              <td class="col-demo">Aktif Penuh (Bebas Lompat ke Tahap Mana Saja)</td>
+            </tr>
+            <tr>
+              <td><strong>Slot Penyimpanan Lokal</strong></td>
+              <td class="col-release"><code>seed_cosmic_reboot_release_v1</code> (Terisolasi)</td>
+              <td class="col-demo"><code>seed_cosmic_reboot_state_v1</code> (Sandbox)</td>
+            </tr>
+            <tr>
+              <td><strong>6 Tahap Evolusi 3D Seed Vault</strong></td>
+              <td class="col-release">Terbuka Bertahap Sesuai Durasi Streak Asli</td>
+              <td class="col-demo">Bisa Dibuka Instan dengan Tombol Preset</td>
+            </tr>
+            <tr>
+              <td><strong>SOS 4-7-8, Binaural Audio &amp; PIN Lock</strong></td>
+              <td class="col-release">Aktif Penuh (100% Offline-Ready)</td>
+              <td class="col-demo">Aktif Penuh (100% Offline-Ready)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SECTION 5: PANDUAN INSTALASI PERANGKAT (ANDROID, IOS & DESKTOP)
+         ===================================================================== -->
+    <section class="device-guide-section" id="section-guide" aria-label="Panduan Instalasi di HP dan Desktop">
+      <div class="install-section-header">
+        <span class="install-eyebrow-pill">CROSS-PLATFORM INSTALLATION</span>
+        <h2 class="install-section-title">Cara Pasang ke Layar Utama HP</h2>
+        <p class="install-section-subtitle">
+          SEED menggunakan teknologi Progressive Web App (PWA) &amp; Offline Service Worker sehingga berjalan layar penuh seperti aplikasi native tanpa membebani memori HP.
+        </p>
+      </div>
+
+      <div class="device-guide-grid">
+        <div class="device-guide-card">
+          <div class="guide-step-num">01</div>
+          <h3 class="guide-card-title">Android (Chrome / Edge)</h3>
+          <p class="guide-card-desc">
+            Ketuk tombol <strong>Instal Aplikasi Rilis</strong> atau <strong>Instal Aplikasi Demo</strong> di atas, lalu pilih <strong>"Install App"</strong> atau ketuk menu tiga titik di pojok kanan atas Chrome dan pilih <strong>"Tambahkan ke Layar Utama"</strong>.
+          </p>
+        </div>
+
+        <div class="device-guide-card">
+          <div class="guide-step-num">02</div>
+          <h3 class="guide-card-title">iPhone / iOS (Safari)</h3>
+          <p class="guide-card-desc">
+            Buka versi aplikasi yang diinginkan (Rilis atau Demo), ketuk ikon <strong>Share (Bagikan)</strong> di bilah bawah Safari, lalu gulir dan pilih <strong>"Add to Home Screen" (Tambah ke Layar Utama)</strong>.
+          </p>
+        </div>
+
+        <div class="device-guide-card">
+          <div class="guide-step-num">03</div>
+          <h3 class="guide-card-title">File Installer Mandiri (.html)</h3>
+          <p class="guide-card-desc">
+            Gunakan tombol <strong>Unduh Installer Rilis</strong> atau <strong>Unduh Installer Demo</strong> untuk menyimpan file peluncur aplikasi mandiri langsung ke penyimpanan perangkatmu.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="install-footer">
+      <div class="install-footer-inner">
+        <div class="install-brand-link">
+          <span class="showcase-orb-mini" aria-hidden="true"></span>
+          <span class="install-brand-wordmark">Seed</span>
+          <span class="install-footer-copy">Cosmic Dopamine Reboot • Swiss Editorial Edition</span>
+        </div>
+        <div class="install-footer-links">
+          <a href="./index.html?edition=release">Buka Aplikasi Rilis</a>
+          <a href="./index.html?edition=demo">Buka Aplikasi Demo</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- =======================================================================
+       INTERACTIVE INSTALLATION WIZARD MODAL (#install-wizard-modal)
+       ======================================================================= -->
+  <div
+    class="cosmic-modal-backdrop"
+    id="install-wizard-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="install-modal-title"
+  >
+    <div class="cosmic-modal-card install-wizard-card">
+      <div class="install-modal-top">
+        <span class="edition-tag-pill tag-release" id="install-modal-badge">EDISI RILIS • v1.0</span>
+        <button type="button" class="sos-close-btn" id="btn-close-install-modal" aria-label="Tutup">✕</button>
+      </div>
+
+      <h3 class="modal-title" id="install-modal-title">Siap Memasang SEED — Versi Rilis</h3>
+      <p class="modal-subtitle" id="install-modal-desc">
+        Konfigurasi aplikasi telah disiapkan. Pilih metode pemasangan di bawah untuk mulai menggunakan SEED.
+      </p>
+
+      <div class="install-readiness-checklist" id="install-readiness-checklist">
+        <div class="readiness-item">
+          <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+          <span>Manifest Aktif: <strong id="install-modal-manifest-name">manifest-release.json</strong></span>
+        </div>
+        <div class="readiness-item">
+          <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+          <span>Database Lokal: <strong id="install-modal-storage-name">seed_cosmic_reboot_release_v1</strong></span>
+        </div>
+        <div class="readiness-item">
+          <svg class="feature-check-svg" aria-hidden="true"><use href="#icon-check-circle" /></svg>
+          <span>Mode Awal: <strong id="install-modal-start-mode">Mulai dari 00:00:00 (Day 1 Murni)</strong></span>
+        </div>
+      </div>
+
+      <div class="install-modal-cta-stack">
+        <button type="button" class="btn-glossy-blue-pill" id="btn-modal-trigger-pwa">
+          Pasang Otomatis ke Layar Utama (PWA)
+        </button>
+        <a href="./index.html?edition=release" class="btn-modal-launch-direct" id="btn-modal-open-app">
+          Buka &amp; Jalankan Aplikasi Sekarang
+        </a>
+        <button type="button" class="btn-modal-download-pkg" id="btn-modal-download-file">
+          Unduh File Peluncur Mandiri (.html)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=11"></script>
+</body>
+</html>
